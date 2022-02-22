@@ -1,0 +1,94 @@
+---
+title: "Theta Calculations"
+output: html_notebook
+author: "Dylan Ryals and Bruno de Medieros"
+---
+
+- calculating theta, tajima's D, and other (?) population statistics from angsd outputs. 
+
+```{r}
+library(tidyverse)
+library(bootstrap)
+```
+
+Global Stats
+
+```{r}
+#read global stats
+thetas.gl = read.delim("global/global.thetaWindow.pestPG", sep = "\t", header = T)
+thetas.gl
+hist(thetas.gl$Tajima)
+```
+
+
+remove empty windows (no variable sites)
+```{r}
+thetas.gl = thetas.gl %>% filter(nSites != 0)
+thetas.gl
+
+sum(thetas.gl$nSites)
+```
+
+
+get means and range for all values.  are all near 0, so possibly dont report.
+```{r}
+#calc mean and ci for each theta value
+get_mrg = function(x){
+
+m = mean(x)
+
+rg = quantile(x, c(0.025, 0.975)) # 95% central range of values 
+
+paste0(sprintf("%.3f", m), " (", sprintf("%.3f", rg[1]), ", ", sprintf("%.3f", rg[2]), ")")
+
+}
+```
+
+apply across table
+```{r}
+summ = thetas.gl[,-c(1:3)] %>% 
+  summarize_all(get_mrg)
+summ
+
+write.csv(summ, "global_summary.csv")
+```
+
+# by population
+
+```{r}
+get_pop_stats = function(pop_name){
+  
+  fpath = paste0("pops/thetaWindows/", pop_name, ".thetasWindow.pestPG")
+  pop_stats = read.delim(fpath, sep = "\t", header = T)
+  #fraction of invariant windows
+  frac_invar = mean(pop_stats$nSites == 0)
+  
+  pop_stats_f = pop_stats %>% filter(nSites != 0)
+  
+  summ = pop_stats_f[,-c(1:3)] %>% summarize_all(get_mrg)
+  
+  summ$frac_invar <- frac_invar
+  
+  return(summ)
+}
+
+```
+
+apply function across all populations 
+```{r}
+
+get_pop_stats("CA.m")
+
+pop_name_list = c("CA.c","CA.m", "CA.s", "OR.m", "OR.s", "WA.m", "WA.s", "MT.m", "MT.s")
+
+names(pop_name_list) = pop_name_list
+
+out_table = purrr::map_df(pop_name_list, get_pop_stats, .id = "population")
+
+```
+
+export 
+```{r}
+write.csv(out_table, "pops/popstats.csv")
+```
+

@@ -1,0 +1,97 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(geosphere)
+```
+
+###Read and manipulate datasets
+
+```{r}
+#read sample data
+var.hives = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'hives')
+var.ext = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'extractions')
+var.api = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'locations')
+var.dig = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'digest+ligation', range = "A1:C379")
+```
+
+
+```{r}
+#merge all varroa data into one df
+var.data = merge(var.ext, var.hives, by = "hive_id") %>%
+  merge(var.api, by = "apiary_id") %>% 
+  separate(gps, c("lat","lon"), sep = ",") %>%
+  merge(var.dig, by = "sample_id") %>%
+  #merge(names, by = "sample_id") %>%
+  select(sample_id, apiary_id, hive_id, lat, lon, movement, type, region, 
+         treatment, pool_id, date_collected, date_extracted)
+
+#fix datatypes
+var.data$lat = var.data$lat %>% as.numeric
+var.data$lon = var.data$lon %>% as.numeric
+
+var.data
+
+rm(var.api, var.dig, var.ext, var.hives)
+```
+
+count collections and extractions
+```{r}
+table1 = var.api %>% mutate(region = sub("-.*", "", region)) %>% select(apiary_id, region, type) %>%
+  right_join(var.hives) %>% group_by(region, type) %>% 
+  summarise(col = sum(mites_collected), ext = sum(mites_extracted))
+
+table1
+```
+
+count passed filters
+```{r}
+inc = read.delim("samples_rmoutliers.txt", header = F, sep = "\t")
+colnames(inc) = "name"
+
+inc = var.data %>% filter(sample_id %in% inc$name) %>% mutate(region = sub("-.*", "", region))
+
+table2 = inc %>% group_by(region, type) %>% summarise(inc = n())
+
+table2
+```
+
+join
+```{r}
+x = table2 %>% right_join(table1, by = c("region", "type"))
+x
+#write.csv(x, "counts.csv")
+```
+
+numbers of samples per apiary
+```{r}
+inc %>% group_by(apiary_id) %>% summarise(n = n()) %>% arrange(n)
+
+```
+
+t test collections by movement type 
+```{r}
+table3 = var.data %>% group_by(hive_id) %>% summarize (n = n(), type = type[1])
+
+table3$type[table3$type == "c"] = "m"
+
+table3 %>% group_by(type) %>% summarize(m = mean(n))
+
+t.test(n ~ type, data = table3)
+```
+### Other Measures
+
+comparative heterozygosity
+```{r}
+het = .0321
+#dietemann 2019 SE Asia
+het / 0.04
+het / 0.05
+```
+
+
+

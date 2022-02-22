@@ -1,0 +1,80 @@
+---
+title: "Calculate Heterozygosity"
+output: html_notebook
+---
+
+### Basic Heterozygosity
+
+by population
+```{r, message=F}
+
+#get populations
+pops = read.delim(paste0("pops/pop_list.txt"), header = F)
+colnames(pops) = "population"
+
+#create df
+het = data.frame(population = pops,
+                 het = NA,
+                 het_hwe = NA)
+class(het$het) = "character"
+class(het$het_hwe) = "character"
+
+#row for global data
+x = data.frame(population = "global",
+               het = as.numeric(NA),
+               het_hwe = as.numeric(NA))
+
+run = c("pops", "het_hwe")
+
+#loop through standard het and hwe filtered het
+for (f in (1:2))
+{
+  
+  #global data
+  g = vector(mode = "numeric", length = 0)
+  
+  #loop through populations
+  for (j in (1:nrow(pops)))
+    {
+      sampfiles = list.files(paste0(run[f], "/het_est/", 
+                                    pops$population[j]), pattern = "*.sfs",
+                             full.names = T)
+      tmphet = vector(mode = "numeric", length = length(sampfiles))
+      
+      #loop through samples
+      for (i in (1:(length(sampfiles)))){
+          a = scan(file = sampfiles[i])
+          tmphet[i] = a[2]/sum(a)
+      }
+      
+      #update global data
+      g = append(g, tmphet)
+      
+      #report mean and quantiles
+      m = mean(tmphet)
+      rg = quantile(tmphet, c(0.025, 0.975)) # 95% central range of values 
+      p = paste0(sprintf("%.2e", m), 
+                 " (", sprintf("%.2e", rg[1]), ", ", sprintf("%.2e", rg[2]), ")")
+      
+      #write to df, standard and filtered estimates in respective cols 
+      het[j, (f+1)] = p
+  }
+  
+  #report global
+  m = mean(g)
+  rg = quantile(g, c(0.025, 0.975)) # 95% central range of values 
+  p = paste0(sprintf("%.2e", m), 
+             " (", sprintf("%.2e", rg[1]), ", ", sprintf("%.2e", rg[2]), ")")
+  x[1, (f+1)] = p
+
+}
+het = rbind(het,x)
+het
+```
+
+write out
+```{r}
+write.csv(het, "heterozygosity.csv")
+```
+
+

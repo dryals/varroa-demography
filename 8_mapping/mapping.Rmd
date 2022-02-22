@@ -1,0 +1,177 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Installations and prep
+
+
+```{r}
+#load packages
+
+library(raster)
+library(rnaturalearth)
+library(sf)
+library(adegenet)
+library(tidyverse)
+library(ggthemes)
+library(RStoolbox)
+library(scales)
+library(broom)
+library(ggsn)
+rm(list=ls())
+```
+
+load data
+
+```{r}
+#read data file
+sample_info = read.csv("sample_info_bed.csv")
+apiary_info = read.csv("apiary_data.csv")
+```
+
+
+mapping 
+
+```{r}
+#download basemap
+#basemap = ne_download(scale = 'large', type = 'GRAY_HR_SR_OB_DR', category = 'raster', destdir = './map')
+#basemap = ne_download(scale = 'large', type = 'NE1_HR_LC', category = 'raster', destdir = './map')
+```
+
+create base map
+```{r}
+#crop the basemap
+basemap = stack('map/GRAY_HR_SR_OB_DR/GRAY_HR_SR_OB_DR.tif')
+#basemap = stack('map/NE1_HR_LC/NE1_HR_LC.tif')
+bbox = raster::extent(c(xmin=-125,xmax=-113,ymin=37,ymax=48))
+cropped = raster::crop(basemap,bbox)
+map_layer = ggRGB(cropped, ggLayer = TRUE,r = 1,g=1,b=1)
+```
+
+large US with cutout for sampling area
+```{r}
+big_us = raster::crop(basemap,raster::extent(c(xmin=-130,xmax=-65,ymin=25,ymax=50)))
+
+full_map_extent_sf = raster::extent(c(xmin=-130,xmax=-65,ymin=25,ymax=50)) %>%
+  as('SpatialPolygons') %>%
+  st_as_sf() %>%
+  st_set_crs(as.character(crs(big_us)))
+
+big_states = ne_states(country = "united states of america", 
+                   returnclass = 'sf') %>%
+  st_transform(as.character(crs(big_us))) %>%
+  st_intersection(full_map_extent_sf)
+
+bbox = raster::extent(c(xmin=-125,xmax=-113,ymin=37,ymax=48)) %>%
+  as('SpatialPolygons')
+crs(bbox) = crs(basemap)
+bbox = st_as_sf(bbox)
+
+bwmap = ggRGB(big_us, r=1, g=1, b=1)
+```
+
+```{r}
+p_big = bwmap +
+  #state borders
+  geom_sf(color='black', fill=NA, size = 0.2, data=big_states) +
+  coord_sf() +
+  #cutout box
+  geom_sf(data=bbox, color = 'red', fill=NA, size=1, linetype = "21") +
+  theme_tufte() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        strip.text = element_text(face='italic'))
+
+plot(p_big)
+```
+
+
+crop to sampling area, include state borders
+```{r}
+  
+coast = raster::crop(basemap,raster::extent(c(xmin=-125,xmax=-113,ymin=37,ymax=48)))
+
+
+map_extent_sf = raster::extent(c(xmin=-125,xmax=-113,ymin=37,ymax=48)) %>%
+  as('SpatialPolygons') %>%
+  st_as_sf() %>%
+  st_set_crs(as.character(crs(coast)))
+
+states = ne_states(country = "united states of america", 
+                   returnclass = 'sf') %>%
+  st_transform(as.character(crs(coast))) %>%
+  st_intersection(map_extent_sf)
+
+```
+
+plotting
+
+```{r}
+set.seed(431)
+#anchors for plotting scalebar
+a = c(-114.5, 38)
+names(a) = c("x", "y")
+a1 = c(-113.8,37)
+names(a1) = c("x", "y")
+
+#read apiary data
+p = ggplot(apiary_info[(apiary_info$region != "MA"),]) +
+  #rnaturalearth map
+  map_layer +
+  #state borders
+  geom_sf(color='black', fill=NA, size = 0.3, data=states) +
+  coord_sf() +
+  #plot apiaries
+  geom_point(aes(x = lon, y = lat, fill = state, shape = type),
+             size = 3,
+             #jitter to make more viewable
+             position = position_jitter(h=0.2, w=0.3)) +
+  
+  #ggrepel or geom_jitter() to make points more visible 
+  
+  #label regions, types
+  
+  #bw-friendly colors 
+  scale_fill_viridis_d(name  = "Region",
+                      breaks=c("CA", "OR", "WA","MT" ),
+                      labels=c("California", "Oregon", "Washington", "Montana")) +
+  
+  guides(fill = guide_legend(override.aes=list(shape=21))) +
+  
+  scale_shape_manual(name = "Type",
+                       values = c(24,21,23),
+                       breaks = c("c","m","s"),
+                       labels = c("Resident","Migratory","Sedentary")) +
+  #scale and N arrow
+  ggsn::scalebar(states, dist = 250, st.size=4, height=0.03, transform = T, 
+                 dist_unit = "km", anchor = a1) +
+  ggsn::north(states, location = "bottomright", scale = 0.15, symbol = 12, anchor = a) +
+  
+  #title and text cleanup
+  theme_tufte() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        strip.text = element_text(face='italic'),
+        text = element_text(size = 20),
+        legend.position = "none")
+
+#make legend smaller, show map of us w/ inset 
+  #print seperate map and use svg to put them together 
+
+#ggsave() as final size (pdf, etc.) (min font size ~7)
+plot(p)
+```
+
+save files to pdf 
+```{r}
+#ggsave(filename = "collection.pdf", plot = p)
+#ggsave(filename = "cutout.pdf", plot = p_big)
+save(p, file = "map.Rdata")
+save(p_big, file = "cutout.Rdata")
+```
+
+
+

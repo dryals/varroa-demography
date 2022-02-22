@@ -1,0 +1,62 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(stringr)
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+#read data files
+var.hives = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'hives')
+var.ext = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'extractions')
+var.api = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'locations')
+var.dig = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'digest+ligation', range = "A1:C379")
+
+names = read.delim('../2_pca/samples_rmoutliers.txt', sep = " ", header = F)
+```
+
+```{r}
+#merge all varroa data into one df
+var.data = merge(var.ext, var.hives, by = "hive_id") %>%
+  merge(var.api, by = "apiary_id") %>% 
+  separate(gps, c("lat","lon"), sep = ",") %>%
+  merge(var.dig, by = "sample_id") %>%
+  select(sample_id, apiary_id, hive_id, lat, lon, movement, type, region, 
+         treatment, pool_id, date_collected, date_extracted) %>%
+  filter(sample_id %in% names[,1])
+
+rm(var.hives, var.ext, var.api, var.dig)
+```
+
+
+```{r}
+#create population lists 
+#setwd()
+
+pops = list()
+for (r in unique(var.data$region)){
+  for (t in unique(var.data$type)){
+    
+    tmp = var.data %>% filter(region == r, type == t) %>% select(sample_id)
+    
+    if (nrow(tmp) != 0){
+      pop = paste(r, t, sep =".")
+      pops[pop] = tmp
+      filename = paste("populations/", pop, ".txt", sep = "")
+      write(tmp[,1], file = filename, append = T, ncolumns = 1, sep = " ")
+    }
+  }
+}
+```
+
+
+```{r}
+#list bamfiles
+out$sample_id = paste0("../3_PCA/bamfiles/", out$sample_id, ".bam")
+out
+```
+

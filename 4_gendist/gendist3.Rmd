@@ -1,0 +1,234 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(geosphere)
+```
+
+###Read and manipulate datasets
+
+```{r}
+#read sample data
+var.hives = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'hives')
+var.ext = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'extractions')
+var.api = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'locations')
+var.dig = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'digest+ligation', range = "A1:C379")
+
+bamlist = read.delim('bam.filelist', header = F) 
+```
+
+
+```{r}
+#manipulate into  df
+
+#extract sample names
+sample_id = substr(as.vector(t(bamlist)), 10, 15)
+names = as.data.frame(sample_id)
+
+#merge all varroa data into one df
+var.data = merge(var.ext, var.hives, by = "hive_id") %>%
+  merge(var.api, by = "apiary_id") %>% 
+  separate(gps, c("lat","lon"), sep = ",") %>%
+  merge(var.dig, by = "sample_id") %>%
+  #merge(names, by = "sample_id") %>%
+  select(sample_id, apiary_id, hive_id, lat, lon, movement, type, region, 
+         treatment, pool_id, date_collected, date_extracted)
+
+#fix datatypes
+var.data$lat = var.data$lat %>% as.numeric
+var.data$lon = var.data$lon %>% as.numeric
+
+#clean up tmp data sets
+rm ( var.api, var.dig, var.ext, var.hives)
+
+#order var.data to match bamlist 
+var.data = var.data[match(sample_id, var.data$sample_id),]
+
+var.data
+```
+
+```{r}
+#read genetic distance matrix 
+gendist = read.delim("varroa.dist", header = F, sep = "\t")
+
+#remove and replace header and colnames
+gendist = gendist[-1, -1]
+
+
+colnames(gendist) = t(names)
+rownames(gendist) = t(names)
+
+gendist[1:5, 1:5]
+```
+
+
+###pairwise dataset 
+
+```{r}
+#df for parirwise data
+pairdata = combn(t(names), 2) %>% t %>% as.data.frame
+colnames(pairdata) = c("samp.a", "samp.b")
+pairdata[,c("gendist", "geodist", "type")] <- NA
+pairdata
+```
+
+
+```{r}
+#fill df with sample data
+n = nrow(pairdata)
+
+for (i in (1:n)){
+  
+  #get sample names and data
+  samp.a = pairdata[i,1] %>% as.character()
+  row.a = var.data[(var.data$sample_id == samp.a),]
+  
+  samp.b = pairdata[i,2] %>% as.character()
+  row.b = var.data[(var.data$sample_id == samp.b),]
+  
+  #fill genetic distance
+  pairdata$gendist[i] = gendist[samp.a, samp.b]
+  
+  #calculate geographic distance
+  pairdata$geodist[i] = 
+    distHaversine( c(row.a$lon, row.a$lat), 
+                   c(row.b$lon, row.b$lat))
+  
+  #fill type
+  #sedentary
+  if (row.a$type == "s" & row.b$type == "s"){
+    pairdata$type[i] = "s"
+  }
+  #migratory
+  if (row.a$type != "s" & row.b$type != "s"){
+    pairdata$type[i] = "m"
+  }
+  #else are a mix of sed/mig/res
+  
+  
+}
+
+sum(pairdata$type == "m", na.rm = T)
+sum(pairdata$type == "s", na.rm = T)
+
+```
+
+save
+```{r}
+save(pairdata, file = "pairdata.Rdata")
+```
+
+###Load Data for Speed
+```{r}
+load("pairdata.Rdata")
+```
+
+
+###plot
+```{r}
+
+#main plot
+p = ggplot(pairdata) +
+  geom_point(aes(y = gendist, x = geodist, 
+                 color = type)) +
+  theme(panel.border = element_rect(color='black',fill=NA)) +
+  geom_smooth(method = "lm", se=FALSE, color="black", linetype = "dashed",  aes(x = geodist, y = gendist)) +
+  labs(title = "All")
+
+plot(p)
+```
+
+```{r}
+library(ggthemes)
+
+fpdata = pairdata %>% filter(type == "m" | type =="s")
+
+for (i in (1:nrow(fpdata))){
+  if (fpdata$type[i] == "m") fpdata$type[i] = "migratory"
+  else fpdata$type[i] = "sedentary"
+}
+
+```
+
+```{r}
+p.t = ggplot(fpdata) +
+  
+  theme_few() +
+  geom_point(aes(y = gendist, x = geodist)) +
+  geom_smooth(method = "lm", se=FALSE, color="red", aes(x = geodist, y = gendist)) +
+  facet_grid(cols = vars(fpdata$type)) +
+  labs(x = "Geographic Distance (km)", y = "Genetic Distance")
+
+#change axes labels; "migratory" and "sedentary" labels via mutate in orrigional table; else labeler 
+
+p.t
+
+```
+
+```{r}
+ggsave(plot=p.t, filename="ibd2.png", width=6, height=4)
+```
+
+### Summarize
+```{r}
+range(pairdata$gendist)
+range(pairdata$geodist)
+range(fpdata$geodist)
+
+amod = lm(gendist ~ geodist, data = fpdata)
+smod = lm(gendist ~ geodist, data = fpdata %>% filter(type == "sedentary"))
+mmod = lm(gendist ~ geodist, data = fpdata %>% filter(type == "migratory"))
+amod$coefficients[2]
+smod$coefficients[2]
+mmod$coefficients[2]
+```
+
+
+
+### Mantel Test
+```{r}
+library(ape)
+library(geodist)
+```
+
+geographic distance matrix in meters 
+```{r}
+all_geo = geodist(var.data %>% select(lat, lon), measure = "haversine")
+sed_geo = geodist(var.data %>% filter(type == 's') %>% select(lat, lon), measure = "haversine")
+mig_geo = geodist(var.data %>% filter(type != 's') %>% select(lat, lon), measure = "haversine")
+```
+
+all samples
+```{r}
+set.seed(12345)
+mantel.test(as.matrix(gendist), as.matrix(all_geo), nperm = 1000, graph = FALSE, alternative = "greater")
+#'greater' implies a positive correlation, which is the only biologically relevant scenerio...
+```
+
+sedentary only
+```{r}
+set.seed(12345)
+sed_samp = var.data$type == 's'
+sed_gen = gendist[sed_samp, sed_samp] #rows and cols with sedentary samples only
+
+mantel.test(as.matrix(sed_gen), as.matrix(sed_geo), nperm = 1000, graph = FALSE, alternative = "greater")
+```
+
+migratory only
+```{r}
+set.seed(12345)
+mig_samp = var.data$type != 's'
+mig_gen = gendist[mig_samp, mig_samp]
+
+mantel.test(as.matrix(mig_gen), as.matrix(mig_geo), nperm = 1000, graph = FALSE, alternative = "greater")
+```
+
+
+
+
+
+

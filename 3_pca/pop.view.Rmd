@@ -1,0 +1,59 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#install.packages("stringr")
+library(stringr)
+#install.packages("tidyverse")
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+#read data files
+var.hives = readxl::read_excel('../../varroa_project.xlsx', sheet = 'hives')
+var.ext = readxl::read_excel('../../varroa_project.xlsx', sheet = 'extractions')
+var.api = readxl::read_excel('../../varroa_project.xlsx', sheet = 'locations')
+var.dig = readxl::read_excel('../../varroa_project.xlsx', sheet = 'digest+ligation', range = "A1:C379")
+```
+
+```{r}
+#merge all varroa data into one df
+var.data = merge(var.ext, var.hives, by = "hive_id") %>%
+  merge(var.api, by = "apiary_id") %>% 
+  separate(gps, c("lat","lon"), sep = ",") %>%
+  merge(var.dig, by = "sample_id") %>%
+  #merge(names, by = "sample_id") %>%
+  select(sample_id, apiary_id, hive_id, lat, lon, movement, type, region, 
+         treatment, pool_id, date_collected, date_extracted)
+```
+
+filter out bad samples
+```{r}
+fifty = read_delim("samples_inc_50.txt", delim = " ", col_names = F)
+
+hundred = read_delim("samples_inc_100.txt", delim = " ", col_names = F)
+
+var.fifty = var.data %>% filter(sample_id %in% fifty)
+var.hundred = var.data %>% filter(sample_id %in% hundred)
+
+inc = read_delim("156_inc.txt", delim = " ", col_names = F)
+```
+
+
+```{r}
+pops = list()
+for (r in unique(var.data$region)){
+  for (t in unique(var.data$type)){
+    
+    tmp = var.data %>% filter(region == r, type == t) %>% select(sample_id) %>% filter(sample_id %in% inc)
+    
+    if (nrow(tmp) != 0){
+      pop = paste(r, t, sep =".")
+      pops[pop] = tmp
+    }
+  }
+}
+```

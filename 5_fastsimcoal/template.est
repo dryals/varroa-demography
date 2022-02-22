@@ -1,0 +1,16 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals => 2 * sample size (diploid)
+1  NPOPS       logunif     10  1e9   output
+1  NPOPM       logunif     10  1e9   output
+0  MIGMS       logunif     1e-10  1e-2   output
+0  MIGSM       logunif     1e-10  1e-2      output
+1  T1		   logunif     1e2  1e9   output	
+0 SIZE1		   logunif     1e-1  10   output
+
+[RULES]
+
+[COMPLEX PARAMETERS]
