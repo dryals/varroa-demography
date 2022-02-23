@@ -31,7 +31,7 @@ These are all run *after* bash scripts and rely on their products.
   - `gendist.Rmd` calculates pairwise geographic distance between samples, and combines with the product of the above script
     to generate the Isolation by Distance test. It also computes mantel tests for significance.
 - 5_fastsimcoal
-  - 
+  - ...
 - 7_diversity
 - 8_mapping
   - script for producing map in figure 1a
