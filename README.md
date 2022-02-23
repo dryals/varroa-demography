@@ -22,7 +22,12 @@ These are all run *after* bash scripts and rely on their products.
     samples from each pool
   - `params-varroa.txt` combines all pools for remaining ipyrad steps 
 - 3_pca
+  - bash scripts assemle and deduplicate reads, generate liklihoods via `angsd`, filter out
+    sites not within Hardy-Weinberg equilibrium, and calculate a PCA
+  - `PCA_view.Rmd` visualizes the PCA and combines it with map information (8_mapping) to produce figure 1
+  - `pop_view.rmd` simply counts samples per populaiton, and has no downstream products
 - 4_gendist
+  - `gendist.Rmd` ...
 - 5_fastsimcoal
 - 7_diversity
 - 8_mapping
