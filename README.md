@@ -27,7 +27,9 @@ These are all run *after* bash scripts and rely on their products.
   - `PCA_view.Rmd` visualizes the PCA and combines it with map information (8_mapping) to produce figure 1
   - `pop_view.rmd` simply counts samples per populaiton, and has no downstream products
 - 4_gendist
-  - `gendist.Rmd` ...
+  - bash script calculates pairwise genetic distance between samples
+  - `gendist.Rmd` calculates pairwise geographic distance between samples, and combines with the product of the above script
+    to generate the Isolation by Distance test. It also computes mantel tests for significance.  
 - 5_fastsimcoal
 - 7_diversity
 - 8_mapping
