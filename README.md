@@ -27,6 +27,7 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
   - bash scripts assemle and deduplicate reads, generate liklihoods via `angsd`, filter out
     sites not within Hardy-Weinberg equilibrium, and calculate a PCA
   - `PCA_view.Rmd` visualizes the PCA and combines it with map information (8_mapping) to produce figure 1
+    - this means scripts in `8_mapping` must be run before figure 1 can be generated  
   - `pop_view.rmd` simply counts samples per populaiton, and has no downstream products
 - 4_gendist
   - bash script calculates pairwise genetic distance between samples
