@@ -17,11 +17,14 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
 
 ## Data
 - `varroa_data.csv` includes sample collection and library preparation data for all samples included in the final analysis
+- varroa genome must be downloaded to `0_ref` and raw reads from this project to `1_raw_reads`
 
 ##  Directories
 
-- 0_raw_reads
-  - must be downloaded from NCBI ...
+- 0_ref
+  - reference genome for *Varroa destructor*
+- 1_raw_reads
+  - raw illumina reads from this project
 - 2_ipyrad
   - scripts for assembling raw reads using `ipyrad`
   - `params-P#.txt` parameter files contain barcode information for demultiplexing 
