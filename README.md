@@ -51,5 +51,5 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
     can be downloaded locally in commented-out section of `mapping.Rmd`
 - 9_tables
   - `sample_stats.Rmd` breaks samples down by extractions, sequencing, inclusion in final analysis, and population
-  - .csv files generated in `7_diversity` are (manually) compiled into `tables.xlsx` , which stores data for all 
-    tables in manuscript
+  - .csv files generated in `7_diversity` and `sample_stats.Rmd` are (manually) compiled into `tables.xlsx`, 
+    which stores data for all tables in manuscript
