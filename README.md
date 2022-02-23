@@ -12,8 +12,8 @@ of their leading numerals. Similarly,
 bash scripts (e.g., `3_pca/2_make_bam.sh`) are designed to
 run in ascending order of their numerals within directories.
 Additional subdirectories and large data files are excluded from this repository, 
-but all can be reconstructed by running these scripts. R markdown scripts were run outside of the cluster on a comsumer laptop.
-These are all run *after* bash scripts and often rely on their products. 
+but all can be reconstructed by running these scripts. R markdown scripts were run outside of the cluster on a comsumer laptop
+*after* bash scripts and often rely on their products. 
 
 
 ##  Directories
@@ -36,8 +36,14 @@ These are all run *after* bash scripts and often rely on their products.
   - bash scripts calculate 2D site frequency spectra for populations, create a filestructure for `fastsimcoal` results,
     run simulations, and finally compile simulations that resulted in maximum liklihood outcomes
   - `template.est` and `template.tpl` are example parameter files which each need to be provided for each
-    population in the (respective population subdirectory), completed with population sample sizes (as in subdir `/pops_bystate`)
+    population in the (respective population subdirectory), completed with population sample sizes (as in subdir `pops_bystate`)
 - 7_diversity
+  - scripts within calculate various summary statistics for genetic diversity
+  - global and by-population statistics are calculated seperately in their respective directories, following similar workflows
+  - statistics are calculated within 10000bp windows, then averaged across populations and globally in `thetas.Rmd`
+  - heterozygosity is calculated per individual across all sites (`pops/3_het_est.sh`) and across only sites 
+    passing the Hardy-Weinberg filter created during PCA (`het_hwe/0_het_est_hwe.sh`). These are averaged across populations and 
+    globally in `estimate_heterozygosity.Rmd`
 - 8_mapping
   - script for producing map in figure 1a
   - `map` subdirectory contains (large) data file not included in this repository. This
