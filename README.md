@@ -13,11 +13,15 @@ bash scripts (e.g., `3_pca/2_make_bam.sh`) are designed to
 run in ascending order of their numerals within directories.
 Additional subdirectories and large data files are excluded from this repository, 
 but all can be reconstructed by running these scripts. R markdown scripts were run outside of the cluster on a comsumer laptop
-*after* bash scripts and often rely on their products. 
+*after* bash scripts and often rely on their products.
 
+## Data
+- `varroa_data.csv` includes sample collection and library preparation data for all samples included in the final analysis
 
 ##  Directories
 
+- 0_raw_reads
+  - must be downloaded from NCBI ...
 - 2_ipyrad
   - scripts for assembling raw reads using `ipyrad`
   - `params-P#.txt` parameter files contain barcode information for demultiplexing 
