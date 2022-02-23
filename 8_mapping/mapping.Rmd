@@ -158,10 +158,6 @@ p = ggplot(apiary_info[(apiary_info$region != "MA"),]) +
         text = element_text(size = 20),
         legend.position = "none")
 
-#make legend smaller, show map of us w/ inset 
-  #print seperate map and use svg to put them together 
-
-#ggsave() as final size (pdf, etc.) (min font size ~7)
 plot(p)
 ```
 

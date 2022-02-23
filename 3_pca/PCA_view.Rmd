@@ -12,7 +12,10 @@ installations
 library(stringr)
 library(tidyverse)
 library(readxl)
-library(cowplot)
+#library(cowplot)
+library(ggpubr)
+
+select = dplyr::select
 ```
 
 
@@ -87,43 +90,6 @@ concatenate
 var.data = cbind(var.data, PCA_axes)
 ```
 
-
-###linear models
-
-by region
-```{r}
-region_df = data.frame(PC1 = PCA_axes$PC1, region = var.data$region)
-#set reference to N.CA
-region_df <- within(region_df, region <- relevel(region, ref = "CA-N")) 
-
-region_model = lm(PC1 ~ region, data = region_df)
-summary(region_model)
-```
-
-by apiary
-```{r}
-apiary_df = data.frame(PC1 = PCA_axes$PC1, apiary = var.data$apiary)
-
-#set reference to largest N.CA apiary: API007
-apiary_df <- within(apiary_df, apiary <- relevel(apiary, ref = "API007")) 
-
-apiary_model = lm(PC1 ~ apiary, data = apiary_df)
-summary(apiary_model)
-```
-
-by type
-```{r}
-type_df = data.frame(PC1 = PCA_axes$PC1, type = var.data$type)
-
-#set reference to N.CA
-type_df <- within(type_df, type <- relevel(type, ref = "c")) 
-
-type_model = lm(PC1 ~ type, data = type_df)
-summary(type_model)
-```
-
-
-
 ###PCA plotting
 
 ```{r}
@@ -149,176 +115,29 @@ p.new = ggplot(var.data) +
 print(p.new)
 ```
 
-save to file
-```{r}
-ggsave(filename = "pca.pdf", plot = p.new, height = 5, width = 7)
-```
 
 ```{r}
-load("../../figures/map/map.Rdata")
-load("../../figures/map/cutout.Rdata")
+load("../8_mapping/map.Rdata")
+load("../8_mapping/cutout.Rdata")
 ```
 
 
 plot all in one 
-```{r}
-le = get_legend(p.new + theme(legend.box.margin = margin(0, 0, 0, 12)))
-le2 = plot_grid(NULL, p_big, NULL, le, ncol = 4, nrow = 1, rel_widths = c(.2, 1, 1, .2))
 
-p_out = plot_grid(p, 
-          p.new + theme(legend.position = "none"),
-          le2, 
-          rel_heights = c(1, .3))
+```{r}
+#+ theme(legend.box.margin = margin(0, 0, 0, 12))
+
+le = get_legend(p.new )
+
+plot(le)
+
+p_out = ggarrange(p, p.new + theme(legend.position = "none"), p_big, le, heights = c(2,1), 
+        labels = c("A", "B", NULL, NULL))
 
 p_out
 ```
 
+
 ```{r}
 ggsave(filename = "pcamap.pdf", plot = p_out, height = 5, width = 8.5)
 ```
-
-
-
-
-### old work from first run
-kept in case it can be reused
-
-
-```{r eval=FALSE}
-load("pold.Rdata")
-```
-
-
-```{r eval=FALSE}
-
-ggarrange(p.old, p.new,
-          labels = c("A","B"),
-          ncol = 2, nrow = 1)
-
-```
-
-
-
-combine into one df
-```{r eval=FALSE}
-pca = cbind(ordered_info, PCA_axes) %>% as.data.frame()
-pca.sed = pca %>% filter(type == "s")
-pca.mig = pca %>% filter(type != "s")
-```
-
-
-
-
-```{r eval=FALSE}
-#violin plots
-v.type = ggplot(pca) + geom_violin(aes(x=type, y=PC1, color = type)) +
-  scale_x_discrete(labels = c("Resident", "Migratory", "Sedentary"), breaks = c("c", "m", "s")) +
-  xlab("Hive Movement") +
-  ylab("PC 1") +
-  theme(legend.position="none") +
-  geom_jitter(aes(x=type, y=PC1), position = position_jitter(h=0, w=0.05), size = 1) 
-
-v.region = ggplot(pca) + geom_violin(aes(x=region, y=PC1, color = region)) +
-  ylab("PC 1") +
-  theme(legend.position="none") +
-  geom_jitter(aes(x=region, y=PC1), position = position_jitter(h=0, w=0.05), size = 1) +
-      scale_x_discrete(name  = "Region: All Samples",
-                      breaks=c("CA-B", "CA-N","OR-C", "OR-MWV","OR-P","WA-PS","MT-W", "MA"),
-                      labels=c("CA-B", "CA-N", "OR-C", "OR-V","OR-P","WA-S","MT-W", "MA"))
-
-v.reg.sed = ggplot(pca.sed) + geom_violin(aes(x=region, y=PC1, color = region)) +
-  #scale_x_discrete(labels = c("Resident", "Migratory", "Sedentary"), breaks = c("c", "m", "s")) +
-  xlab("Region: Sedentary") +
-  ylab("PC 1") +
-  theme(legend.position="none") +
-  geom_jitter(aes(x=region, y=PC1), position = position_jitter(h=0, w=0.05), size = 1) +
-      scale_x_discrete(name  = "Region: Sedentary",
-                      breaks=c("CA-B", "OR-C", "OR-MWV","OR-P","WA-PS","MT-W", "MA"),
-                      labels=c("CA-B", "OR-C", "OR-V","OR-P","WA-S","MT-W", "MA"))
-
-v.pool = ggplot(pca) + geom_violin(aes(x=pool, y=PC1, color = pool)) +
-  #scale_x_discrete(labels = c("Resident", "Migratory", "Sedentary"), breaks = c("c", "m", "s")) +
-  xlab("Pools") +
-  ylab("PC 1") +
-  theme(legend.position="none") +
-  geom_jitter(aes(x=pool, y=PC1), position = position_jitter(h=0, w=0.05), size = 1)
-
-v.apiary = ggplot(pca) + geom_violin(aes(x=apiary_id, y=PC1, color = apiary_id)) +
-  #scale_x_discrete(labels = c("Resident", "Migratory", "Sedentary"), breaks = c("c", "m", "s")) +
-  xlab("Apiaries") +
-  ylab("PC 1") +
-  theme(legend.position="none") +
-  geom_jitter(aes(x=apiary_id, y=PC1), position = position_jitter(h=0, w=0.04))
-  
-plot(v.type)
-plot(v.region)
-plot(v.reg.sed)
-plot(v.pool)
-```
-
-```{r eval=FALSE}
-ggarrange(v.pool, v.type, v.region, v.reg.sed,
-          labels = c("A", "B", "C", "D"),
-          ncol = 2, nrow = 2)
-```
-
-
-
-```{r eval=FALSE}
-#plot by geographic distance
-PC1 = PCA_axes$PC1
-geo_info = cbind(geo_info, PC1)
-
-#pc_dist = dist(geo_info$PC1)
-#geo_dist = dist(geo_info[c("lat","lon")])
-#plot(geo_dist, pc_dist)
-
-#sedentary only
-sedentary = geo_info %>% filter(region != "MA", type == "s")
-geo_dist_s = dist(sedentary[c('lat','lon')])
-pc_dist_s = dist(sedentary$PC1)
-
-#migratory only
-migratory = geo_info %>% filter(type != "s")
-pc_dist_m = dist(migratory$PC1)
-geo_dist_m = dist(migratory[c("lat","lon")])
-plot(geo_dist_m, pc_dist_m)
-
-```
-
-
-
-```{r eval=FALSE}
-#compare island to mainland
-island = (ordered_info$apiary_id == "API022" | ordered_info$apiary_id == "API023")
-ggplot(PCA_axes) + geom_violin(aes(x=island, y=PCA_axes$PC1))
-
-#compare MA to everything else
-ggplot(PCA_axes) + geom_violin(aes(x=(ordered_info$region == "MA"), y=PCA_axes$PC1))
-
-```
-
-
-```{r eval=FALSE}
-#sedentary only by region
-pc_sed = PCA_axes[(ordered_info$type == "s"),]
-ggplot(pc_sed) + geom_violin(aes(x=sedentary$region, y=pc_sed$PC1))
-```
-
-
-```{r eval=FALSE}
-#mantel test
-#install.packages("ape")
-library(ape)
-#all samples
-mantel.test(as.matrix(pc_dist), as.matrix(geo_dist), nperm = 500, graph = TRUE, alternative = "greater")
-
-#sedentary only
-mantel.test(as.matrix(pc_dist_s), as.matrix(geo_dist_s), nperm = 500, graph = TRUE, alternative = "greater")
-
-#migratory only
-mantel.test(as.matrix(pc_dist_m), as.matrix(geo_dist_m), nperm = 500, graph = TRUE, alternative = "greater")
-```
-
-
-
