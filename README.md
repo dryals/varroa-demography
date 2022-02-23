@@ -7,11 +7,13 @@ describe repo, what is in each folder, instructions on how to run scripts, expla
 explain where to find data (ncbi eventually) 
 --->
 
-All scripts were run on the FASRC Cannon cluster, and are designed for cluster computing.
-Bash scripts begining with one or more numerals (e.g., `3_pca/2_make_bam.sh`) are designed to
-run in ascending order of their numerals. Additional subdirectories and large data files are excluded from this repository, 
+All scripts were run on the FASRC Cannon cluster, and are designed for cluster computing. All directories are completed in order
+of their leading numerals. Similarly, 
+bash scripts (e.g., `3_pca/2_make_bam.sh`) are designed to
+run in ascending order of their numerals within directories.
+Additional subdirectories and large data files are excluded from this repository, 
 but all can be reconstructed by running these scripts. R markdown scripts were run outside of the cluster on a comsumer laptop.
-These are all run *after* bash scripts and rely on their products. 
+These are all run *after* bash scripts and often rely on their products. 
 
 
 ##  Directories
@@ -31,7 +33,10 @@ These are all run *after* bash scripts and rely on their products.
   - `gendist.Rmd` calculates pairwise geographic distance between samples, and combines with the product of the above script
     to generate the Isolation by Distance test. It also computes mantel tests for significance.
 - 5_fastsimcoal
-  - ...
+  - bash scripts calculate 2D site frequency spectra for populations, create a filestructure for `fastsimcoal` results,
+    run simulations, and finally compile simulations that resulted in maximum liklihood outcomes
+  - `template.est` and `template.tpl` are example parameter files which each need to be provided for each
+    population in the (respective population subdirectory), completed with population sample sizes (found in `populations.Rmd`)
 - 7_diversity
 - 8_mapping
   - script for producing map in figure 1a
