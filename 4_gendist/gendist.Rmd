@@ -117,14 +117,11 @@ sum(pairdata$type == "s", na.rm = T)
 
 ```
 
-save
+###optionally save or load data to avoid long computation
 ```{r}
-save(pairdata, file = "pairdata.Rdata")
-```
+#save(pairdata, file = "pairdata.Rdata")
 
-###Load Data for Speed
-```{r}
-load("pairdata.Rdata")
+#load("pairdata.Rdata")
 ```
 
 
