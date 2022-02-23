@@ -47,6 +47,8 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
 - 8_mapping
   - script for producing map in figure 1a
   - `map` subdirectory contains (large) data file not included in this repository. This
-    can be downloaded locally in the beginning of `mapping.Rmd`
-  - 
+    can be downloaded locally in commented-out section of `mapping.Rmd`
 - 9_tables
+  - `sample_stats.Rmd` breaks samples down by extractions, sequencing, inclusion in final analysis, and population
+  - .csv files generated in `7_diversity` are (manually) compiled into `tables.xlsx` , which stores data for all 
+    tables in manuscript
