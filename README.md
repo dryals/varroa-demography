@@ -36,7 +36,7 @@ These are all run *after* bash scripts and often rely on their products.
   - bash scripts calculate 2D site frequency spectra for populations, create a filestructure for `fastsimcoal` results,
     run simulations, and finally compile simulations that resulted in maximum liklihood outcomes
   - `template.est` and `template.tpl` are example parameter files which each need to be provided for each
-    population in the (respective population subdirectory), completed with population sample sizes (found in `populations.Rmd`)
+    population in the (respective population subdirectory), completed with population sample sizes (as in subdir `/pops_bystate`)
 - 7_diversity
 - 8_mapping
   - script for producing map in figure 1a
