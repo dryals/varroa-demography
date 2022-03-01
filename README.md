@@ -33,11 +33,13 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
 - 3_pca
   - bash scripts assemle and deduplicate reads, generate liklihoods via `angsd`, filter out
     sites not within Hardy-Weinberg equilibrium, and calculate a PCA
+    - `varroa.pca.cov` is the final output, included here for reference
   - `PCA_view.Rmd` visualizes the PCA and combines it with map information (8_mapping) to produce figure 1
     - this means scripts in `8_mapping` must be run before figure 1 can be generated  
   - `pop_view.rmd` simply counts samples per populaiton, and has no downstream products
 - 4_gendist
   - bash script calculates pairwise genetic distance between samples
+    - `varroa.dist` is the output, included here for reference
   - `gendist.Rmd` calculates pairwise geographic distance between samples, and combines with the product of the above script
     to generate the Isolation by Distance test. It also computes mantel tests for significance.
 - 5_fastsimcoal
