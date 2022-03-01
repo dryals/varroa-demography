@@ -22,7 +22,7 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
 ##  Directories
 
 - 0_ref
-  - reference genome for *Varroa destructor*
+  - reference genome for *Varroa destructor*, [linked here](https://www.ncbi.nlm.nih.gov/assembly/GCF_002443255.1/)
 - 1_raw_reads
   - raw illumina reads from this project
 - 2_ipyrad
