@@ -13,37 +13,12 @@ library(geosphere)
 
 ```{r}
 #read sample data
-var.hives = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'hives')
-var.ext = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'extractions')
-var.api = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'locations')
-var.dig = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'digest+ligation', range = "A1:C379")
-
-bamlist = read.delim('bam.filelist', header = F) 
-```
-
-
-```{r}
-#manipulate into  df
+var.data = read_csv('../varroa_data.csv')
+bamlist = read.delim('bam.filelist', header = F)
 
 #extract sample names
 sample_id = substr(as.vector(t(bamlist)), 10, 15)
 names = as.data.frame(sample_id)
-
-#merge all varroa data into one df
-var.data = merge(var.ext, var.hives, by = "hive_id") %>%
-  merge(var.api, by = "apiary_id") %>% 
-  separate(gps, c("lat","lon"), sep = ",") %>%
-  merge(var.dig, by = "sample_id") %>%
-  #merge(names, by = "sample_id") %>%
-  select(sample_id, apiary_id, hive_id, lat, lon, movement, type, region, 
-         treatment, pool_id, date_collected, date_extracted)
-
-#fix datatypes
-var.data$lat = var.data$lat %>% as.numeric
-var.data$lon = var.data$lon %>% as.numeric
-
-#clean up tmp data sets
-rm ( var.api, var.dig, var.ext, var.hives)
 
 #order var.data to match bamlist 
 var.data = var.data[match(sample_id, var.data$sample_id),]
@@ -149,6 +124,8 @@ for (i in (1:nrow(fpdata))){
   else fpdata$type[i] = "sedentary"
 }
 
+#log transform
+fpdata$geodist = log(fpdata$geodist + 1)
 ```
 
 ```{r}
@@ -163,7 +140,6 @@ p.t = ggplot(fpdata) +
 #change axes labels; "migratory" and "sedentary" labels via mutate in orrigional table; else labeler 
 
 p.t
-
 ```
 
 ```{r}
@@ -190,6 +166,8 @@ mmod$coefficients[2]
 ```{r}
 library(ape)
 library(geodist)
+
+select = dplyr::select
 ```
 
 geographic distance matrix in meters 
