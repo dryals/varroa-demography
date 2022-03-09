@@ -1,4 +1,4 @@
-# varroa-demography
+# Population genetics of *Varroa destructor*
 
 <!--- 
 understand what each piece of code does...
@@ -7,7 +7,14 @@ describe repo, what is in each folder, instructions on how to run scripts, expla
 explain where to find data (ncbi eventually) 
 --->
 
-All scripts were run on the FASRC Cannon cluster, and are designed for cluster computing. All directories are completed in order
+This repository contains code used in analyses in:
+
+```
+Ryals D, de Medeiros BAS & Farrell BD. Migratory beekeeping facilitates genetic admixture 
+in populations of the honeybee parasite Varroa destructor. In review
+```
+
+All scripts were run on the FASRC Cannon cluster. All directories are completed in order
 of their leading numerals. Similarly, 
 bash scripts (e.g., `3_pca/2_make_bam.sh`) are designed to
 run in ascending order of their numerals within directories.
@@ -15,9 +22,10 @@ Additional subdirectories and large data files are excluded from this repository
 but all can be reconstructed by running these scripts. R markdown scripts were run outside of the cluster on a comsumer laptop
 *after* bash scripts and often rely on their products.
 
-## Data
+## Data to reproduce
 - `varroa_data.csv` includes sample collection and library preparation data for all samples included in the final analysis
-- varroa genome must be downloaded to `0_ref` and raw reads from this project to `1_raw_reads`
+- The [varroa genome assembly](https://www.ncbi.nlm.nih.gov/assembly/GCF_002443255.1) is not included and must be downloaded as a fasta file to `0_ref`
+- Raw reads from this project are available in NCBI bioproject XXXXX (link) and must be downloaded to `1_raw_reads` following the name convetion in `varroa_data.csv`
 
 ##  Directories
 
@@ -27,7 +35,7 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
   - raw illumina reads from this project
 - 2_ipyrad
   - scripts for assembling raw reads using `ipyrad`
-  - `params-P#.txt` parameter files contain barcode information for demultiplexing 
+  - `params-P*.txt` parameter files contain barcode information for demultiplexing 
     samples from each pool
   - `params-varroa.txt` combines all pools for remaining ipyrad steps 
 - 3_pca
@@ -60,5 +68,5 @@ but all can be reconstructed by running these scripts. R markdown scripts were r
     can be downloaded locally in commented-out section of `mapping.Rmd`
 - 9_tables
   - `sample_stats.Rmd` breaks samples down by extractions, sequencing, inclusion in final analysis, and population
-  - .csv files generated in `7_diversity` and `sample_stats.Rmd` are (manually) compiled into `tables.xlsx`, 
+  - `*.csv` files generated in `7_diversity` and `sample_stats.Rmd` are (manually) compiled into `tables.xlsx`, 
     which stores data for all tables in manuscript
