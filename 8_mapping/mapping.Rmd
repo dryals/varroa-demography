@@ -19,6 +19,9 @@ library(RStoolbox)
 library(scales)
 library(broom)
 library(ggsn)
+
+select = dplyr::select
+
 rm(list=ls())
 ```
 
@@ -26,8 +29,8 @@ load data
 
 ```{r}
 #read data file
-sample_info = read.csv("sample_info_bed.csv")
-apiary_info = read.csv("apiary_data.csv")
+var.data = read.csv("../varroa_data.csv")
+apiary_info = var.data %>% select(apiary_id, lat, lon, type, state = s_region) %>% distinct
 ```
 
 
@@ -117,7 +120,7 @@ a1 = c(-113.8,37)
 names(a1) = c("x", "y")
 
 #read apiary data
-p = ggplot(apiary_info[(apiary_info$region != "MA"),]) +
+p = ggplot(apiary_info) +
   #rnaturalearth map
   map_layer +
   #state borders
@@ -141,8 +144,8 @@ p = ggplot(apiary_info[(apiary_info$region != "MA"),]) +
   guides(fill = guide_legend(override.aes=list(shape=21))) +
   
   scale_shape_manual(name = "Type",
-                       values = c(24,21,23),
-                       breaks = c("c","m","s"),
+                       values = c(21,23,24),
+                       breaks = c("r","m","s"),
                        labels = c("Resident","Migratory","Sedentary")) +
   #scale and N arrow
   ggsn::scalebar(states, dist = 250, st.size=4, height=0.03, transform = T, 

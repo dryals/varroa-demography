@@ -22,20 +22,6 @@ select = dplyr::select
 load files, data, varriables 
 
 ```{r}
-#read data files
-# var.hives = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'hives')
-# var.ext = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'extractions')
-# var.api = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'locations')
-# var.dig = readxl::read_excel('../../../varroa_project.xlsx', sheet = 'digest+ligation', range = "A1:C379")
-# #merge all varroa data into one df
-# var.data = merge(var.ext, var.hives, by = "hive_id") %>%
-#   merge(var.api, by = "apiary_id") %>% 
-#   separate(gps, c("lat","lon"), sep = ",") %>%
-#   merge(var.dig, by = "sample_id") %>%
-#   select(sample_id, apiary_id, hive_id, lat, lon, movement, type, region, 
-#          treatment, pool_id, date_collected, date_extracted)
-
-
 var.data = read_csv('../varroa_data.csv')
 covrs = read.delim('varroa.pca.cov', header = F, sep = ' ')
 bamlist = read.delim('bam.filelist', header = F)
@@ -98,7 +84,7 @@ p.new = ggplot(var.data) +
   guides(fill = guide_legend(override.aes=list(shape=21))) +
 
   scale_shape_manual(name = "Type",
-                       values = c(24,21,23),
+                       values = c(21,23,24),
                        breaks = c("r","m","s"),
                        labels = c("Resident","Migratory","Sedentary")) 
   

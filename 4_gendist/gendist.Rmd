@@ -123,9 +123,6 @@ for (i in (1:nrow(fpdata))){
   if (fpdata$type[i] == "m") fpdata$type[i] = "migratory"
   else fpdata$type[i] = "sedentary"
 }
-
-#log transform
-fpdata$geodist = log(fpdata$geodist + 1)
 ```
 
 ```{r}
@@ -143,7 +140,7 @@ p.t
 ```
 
 ```{r}
-ggsave(plot=p.t, filename="ibd2.png", width=6, height=4)
+#ggsave(plot=p.t, filename="ibd2.png", width=6, height=4)
 ```
 
 ### Summarize
@@ -162,7 +159,7 @@ mmod$coefficients[2]
 
 
 
-### Mantel Test
+### Mantel Tests
 ```{r}
 library(ape)
 library(geodist)
