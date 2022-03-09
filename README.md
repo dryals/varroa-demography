@@ -22,7 +22,7 @@ Additional subdirectories and large data files are excluded from this repository
 but all can be reconstructed by running these scripts. R markdown scripts were run outside of the cluster on a comsumer laptop
 *after* bash scripts and often rely on their products.
 
-## Data to reproduce
+## Data
 - `varroa_data.csv` includes sample collection and library preparation data for all samples included in the final analysis
 - The [varroa genome assembly](https://www.ncbi.nlm.nih.gov/assembly/GCF_002443255.1) is not included and must be downloaded as a fasta file to `0_ref`
 - Raw reads from this project are available in NCBI bioproject XXXXX (link) and must be downloaded to `1_raw_reads` following the name convetion in `varroa_data.csv`
