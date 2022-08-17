@@ -81,10 +81,10 @@ p.new = ggplot(var.data) +
                       breaks=c("CA", "OR", "WA","MT" ),
                       labels=c("California", "Oregon", "Washington", "Montana")) +
   
-  guides(fill = guide_legend(override.aes=list(shape=21))) +
+  guides(fill = guide_legend(override.aes=list(shape=22))) +
 
   scale_shape_manual(name = "Type",
-                       values = c(21,23,24),
+                       values = c(22,23,24),
                        breaks = c("r","m","s"),
                        labels = c("Resident","Migratory","Sedentary")) 
   
