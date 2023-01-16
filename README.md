@@ -1,6 +1,8 @@
 # Population genetics of *Varroa destructor*
 
-<!--- 
+<!---
+UPDATED: begining responses to reviewers...
+ 
 understand what each piece of code does...
 
 describe repo, what is in each folder, instructions on how to run scripts, explain simlinks (and data not included)
